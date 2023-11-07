@@ -104,5 +104,8 @@ Or imperial crowns: Unsent, unsigned--`;
 */
 console.log(passage);
 const wrecked = wreck(passage);
+//const proc = require("child_process").spawn("say");
+//proc.stdin.write(wrecked);
+//proc.stdin.end();
 console.log("---");
 console.log(wrecked);
