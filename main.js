@@ -38,6 +38,17 @@ function randnth(xs) {
 function warp(str) {
   return randnth(bestmuts(str, 3));
 }
+function fixsolo(word) {
+  if (word.length !== 1) return word;
+  return {
+    "a": "a", "b": randnth(["be", "bee"]), "c": randnth(["see", "sea"]),
+    "d": "the", "e": "'e", "f": "eff", "g": "gee", "h": "h'", "i": "i",
+    "j": "jay", "k": "kay", "l": "ell", "m": "'em", "n": "'n", "o": "o",
+    "p": "pee", "q": randnth(["cue", "queue"]), "r": "are", "s": "ess",
+    "t": "tee", "u": "you", "v": "vee", "w": "with", "x": "ex", "y": "why",
+    "z": "the"
+  }[word];
+}
 function wreck(passage, turns) {
   //console.log(passage);
   turns = turns || 100;
@@ -46,10 +57,12 @@ function wreck(passage, turns) {
     const warpedlines = [];
     for (const line of lines) {
       const words = line.split(/\s+/);
-      const scoredwords = [...words].filter(w => w.length > 1).sort((a, b) => prob(a) - prob(b));
+      const scoredwords = words.filter(w => w.length > 1).sort((a, b) => prob(a) - prob(b));
       const worstword = randnth(scoredwords.slice(0, 3));
       const warpedword = warp(worstword);
-      const warpedline = words.map(w => w === worstword ? warpedword : w).join(" ");
+      const warpedline = words.map(w => w === worstword ? warpedword : w)
+                              .map(w => i === turns - 1 ? fixsolo(w) : w)
+                              .join(" ");
       warpedlines.push(warpedline);
     }
     passage = warpedlines.join("\n");
