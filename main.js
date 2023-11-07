@@ -75,7 +75,7 @@ function range(n) {
   return [...Array(n).keys()];
 }
 function noise(len) {
-  return range(len).map(_ => randnth(abet + "   ")).join("").replace(/\s+/, " ");
+  return range(len).map(_ => randnth(abet + "    ")).join("").replace(/\s+/, " ");
 }
 const passage = range(10).map(_ => noise(25)).join("\n");
 /*
