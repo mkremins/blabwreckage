@@ -10,9 +10,13 @@ function prob(str) {
   return prb;
 }
 const abet = "abcdefghijklmnopqrstuvwxyz";
+const vows = "aeiouy".split("");
 function setchr(str, pos, chr) {
   return str.substring(0, pos) + chr + str.substring(pos + 1);
 }
+const constraints = [
+  w => vows.some(v => w.includes(v)),
+];
 function mutate(str) {
   const edits = [];
   if (!str) return edits; // skip empty lines
@@ -20,7 +24,9 @@ function mutate(str) {
     for (let j = 0; j < abet.length; j++) {
       if (str[i] === abet[j]) continue; // prevent null edits
       if (!/[a-zA-Z]/.test(str[i])) continue; // leave punctuation alone
-      edits.push(setchr(str, i, abet[j]));
+      const edit = setchr(str, i, abet[j]);
+      if (constraints.some(c => !c(edit))) continue; // prevent disallowed edits
+      edits.push(edit);
     }
   }
   return edits;
