@@ -204,4 +204,18 @@ That twenty centuries of stony sleep
 Were vexed to nightmare by a rocking cradle,   
 And what rough beast, its hour come round at last,   
 Slouches towards Bethlehem to be born?`,
+// tagline
+`a single operation that both wrecks and repairs`,
+// barrow
+`so much depends
+upon
+
+a red wheel
+barrow
+
+glazed with rain
+water
+
+beside the white
+chickens`,
 ];
