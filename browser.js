@@ -46,8 +46,8 @@ function fixsolo(word) {
   if (word.length !== 1) return word;
   return {
     "a": "a", "b": randnth(["be", "bee"]), "c": randnth(["see", "sea"]),
-    "d": "the", "e": "'e", "f": "eff", "g": "gee", "h": "h'", "i": "i",
-    "j": "jay", "k": "kay", "l": "ell", "m": "'em", "n": "'n", "o": "o",
+    "d": "the", "e": "he", "f": "eff", "g": "gee", "h": "huh", "i": "i",
+    "j": "jay", "k": "kay", "l": "ell", "m": "'em", "n": "and", "o": "o",
     "p": "pee", "q": randnth(["cue", "queue"]), "r": "are", "s": "ess",
     "t": "tee", "u": "you", "v": "vee", "w": "with", "x": "ex", "y": "why",
     "z": "the"
