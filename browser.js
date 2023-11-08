@@ -18,11 +18,11 @@ const constraints = [
   w => vows.some(v => w.includes(v)),
 ];
 function mutate(str) {
-  const edits = [];
   if (!str) return edits; // skip empty lines
+  const edits = [str]; // allow a single null edit, so we can quiesce
   for (let i = 0; i < str.length; i++) {
     for (let j = 0; j < abet.length; j++) {
-      if (str[i] === abet[j]) continue; // prevent null edits
+      if (str[i] === abet[j]) continue; // prevent excess null edits
       if (!/[a-zA-Z]/.test(str[i])) continue; // leave punctuation alone
       const edit = setchr(str, i, abet[j]);
       if (constraints.some(c => !c(edit))) continue; // prevent disallowed edits
@@ -42,6 +42,33 @@ function randnth(xs) {
 function warp(str) {
   return randnth(bestmuts(str, 3));
 }
+function mapcat(xs, fn) {
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    var x = fn(xs[i], i);
+    if (Array.isArray(x)) res.push.apply(res, x);
+    else res.push(x);
+  }
+  return res;
+}
+function wreck(passage) {
+  const words = passage.trim().replace(/\n/g, "%%%").split(/\s+/);
+  const actualwords = words.filter(w => w.length > 1);
+  const scoredwords = actualwords.map(w => [w, prob(w)]);
+  const edits = mapcat(actualwords, word => {
+    const edits = mutate(word).map(edit => {
+      return [word, edit, prob(edit) - prob(word)];
+    });
+    return edits;
+  });
+  const bestedits = edits.sort((a, b) => b[2] - a[2]).slice(0, 3);
+  const bestedit = randnth(bestedits);
+  console.log(bestedit);
+  const [worstword, wreckedword, _delta] = bestedit;
+  const newwords = words.map(w => w === worstword ? wreckedword : w);
+  const newpassage = newwords.join(" ").replace(/%%%/g, "\n");
+  return newpassage;
+}
 function fixsolo(word) {
   if (word.length !== 1) return word;
   return {
@@ -53,20 +80,12 @@ function fixsolo(word) {
     "z": "the"
   }[word] || word;
 }
-function wreck(passage, shouldfix) {
-  const lines = passage.trim().split(/\n/);
-  const warpedlines = [];
-  for (const line of lines) {
-    const words = line.split(/\s+/);
-    const scoredwords = words.filter(w => w.length > 1).sort((a, b) => prob(a) - prob(b));
-    const worstword = randnth(scoredwords.slice(0, 3));
-    const warpedword = warp(worstword);
-    const warpedline = words.map(w => w === worstword ? warpedword : w)
-                            .map(w => shouldfix ? fixsolo(w) : w)
-                            .join(" ");
-    warpedlines.push(warpedline);
-  }
-  return warpedlines.join("\n");
+function fixsolos(passage) {
+  // FIXME doesn't handle words at start or end of line correctly? %%% screwup?
+  const words = passage.trim().replace(/\n/g, "%%%").split(/\s+/);
+  const newwords = words.map(fixsolo);
+  const newpassage = newwords.join(" ").replace(/%%%/g, "\n");
+  return newpassage;
 }
 function range(n) {
   return [...Array(n).keys()];
@@ -75,22 +94,40 @@ function noise(len) {
   return range(len).map(_ => randnth(abet + "    ")).join("").replace(/\s+/, " ");
 }
 const wreckage = document.getElementById("wreckage");
+const initTurns = 1000;
 wreckage.innerText = wreckage.innerText.trim();
+let prevText = wreckage.innerText;
 document.getElementById("borrow").onclick = () => {
   wreckage.innerText = randnth(borrowings);
+  prevText = wreckage.innerText;
 };
 document.getElementById("summon").onclick = () => {
   wreckage.innerText = range(10).map(_ => noise(25)).join("\n");
+  prevText = wreckage.innerText;
 };
 document.getElementById("wreck").onclick = () => {
-  turnsLeft = 100;
+  turnsLeft = initTurns;
 };
 let turnsLeft = 0;
 window.setInterval(() => {
+  // bail immediately if no turns left
   if (turnsLeft <= 0) return;
-  wreckage.innerText = wreck(wreckage.innerText, turnsLeft === 1);
+  // wreck text
+  wreckage.innerText = wreck(wreckage.innerText);
+  // if quiescent, burn remaining turn budget
+  if (prevText === wreckage.innerText) {
+    console.log("Quiescence reached in", initTurns - turnsLeft, "turns. ∎");
+    turnsLeft = 1;
+  }
+  // decrement turn budget
   turnsLeft -= 1;
-}, 100);
+  // if out of turns, fix solos
+  if (turnsLeft === 0) {
+    wreckage.innerText = fixsolos(wreckage.innerText);
+  }
+  // update prevText for quiescence checking next turn
+  prevText = wreckage.innerText;
+}, 10);
 const borrowings = [
 // ozy
 `I met a traveller from an antique land,
