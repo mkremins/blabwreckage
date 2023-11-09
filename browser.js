@@ -151,10 +151,12 @@ window.setInterval(() => {
   }
   // decrement turn budget
   turnsLeft -= 1;
+  /*
   // if out of turns, fix solos
   if (turnsLeft === 0) {
     wreckage.innerText = fixsolos(wreckage.innerText);
   }
+  */
   // update prevText for quiescence checking next turn
   prevText = wreckage.innerText;
 }, 10);
