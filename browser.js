@@ -1,3 +1,35 @@
+function tokenize(str) {
+  const toks = [];
+  let span = "";
+  let alphatok = false;
+  let tokstart = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    const alphachar = /[a-zA-Z]/.test(ch);
+    if (alphachar && !alphatok) {
+      // wrap up nontok, start new alphatok with ch
+      if (span !== "") toks.push([span, false, tokstart, i]);
+      span = ch;
+      alphatok = true;
+      tokstart = i;
+    }
+    else if (!alphachar && alphatok) {
+      // wrap up alphatok, start new nontok with ch
+      if (span !== "") toks.push([span, true, tokstart, i]);
+      span = ch;
+      alphatok = false;
+      tokstart = i;
+    }
+    else {
+      span += ch;
+    }
+  }
+  if (span !== "") {
+    // wrap up any dangling tok
+    toks.push([span, alphatok, tokstart, str.length]);
+  }
+  return toks;
+}
 function prob(str) {
   str = `^${str.replace(/[^a-zA-Z]/, "")}$`;
   let prb = 1;
@@ -52,21 +84,19 @@ function mapcat(xs, fn) {
   return res;
 }
 function wreck(passage) {
-  const words = passage.trim().replace(/\n/g, "%%%").split(/\s+/);
-  const actualwords = words.filter(w => w.length > 1);
-  const scoredwords = actualwords.map(w => [w, prob(w)]);
-  const edits = mapcat(actualwords, word => {
-    const edits = mutate(word).map(edit => {
-      return [word, edit, prob(edit) - prob(word)];
-    });
-    return edits;
+  const toks = tokenize(passage);
+  const wordtoks = toks.filter(tok => tok[1]);
+  const words = wordtoks.map(tok => tok[0]);
+  const edits = mapcat(words, word => {
+    const wordprob = prob(word);
+    return mutate(word).map(edit => [word, edit, prob(edit) - wordprob]);
   });
   const bestedits = edits.sort((a, b) => b[2] - a[2]).slice(0, 3);
   const bestedit = randnth(bestedits);
   console.log(bestedit);
   const [worstword, wreckedword, _delta] = bestedit;
-  const newwords = words.map(w => w === worstword ? wreckedword : w);
-  const newpassage = newwords.join(" ").replace(/%%%/g, "\n");
+  const newtexts = toks.map(tok => tok[0] === worstword ? wreckedword : tok[0]);
+  const newpassage = newtexts.join("");
   return newpassage;
 }
 function fixsolo(word) {
@@ -81,10 +111,9 @@ function fixsolo(word) {
   }[word] || word;
 }
 function fixsolos(passage) {
-  // FIXME doesn't handle words at start or end of line correctly? %%% screwup?
-  const words = passage.trim().replace(/\n/g, "%%%").split(/\s+/);
-  const newwords = words.map(fixsolo);
-  const newpassage = newwords.join(" ").replace(/%%%/g, "\n");
+  const toks = tokenize(passage);
+  const newtexts = toks.map(tok => fixsolo(tok[0]));
+  const newpassage = newtexts.join("");
   return newpassage;
 }
 function range(n) {
@@ -106,6 +135,7 @@ document.getElementById("summon").onclick = () => {
   prevText = wreckage.innerText;
 };
 document.getElementById("wreck").onclick = () => {
+  console.log(tokenize(wreckage.innerText));
   turnsLeft = initTurns;
 };
 let turnsLeft = 0;
