@@ -31,7 +31,7 @@ function tokenize(str) {
   return toks;
 }
 function prob(str) {
-  str = `^${str.replace(/[^a-zA-Z]/, "")}$`;
+  str = `^${str.replace(/[^a-zA-Z]/, "").toLowerCase()}$`;
   let prb = 1;
   for (let i = 0; i < str.length - 2; i++) {
     const fst = str[i];
@@ -54,9 +54,10 @@ function mutate(str) {
   const edits = [str]; // allow a single null edit, so we can quiesce
   for (let i = 0; i < str.length; i++) {
     for (let j = 0; j < abet.length; j++) {
-      if (str[i] === abet[j]) continue; // prevent excess null edits
-      if (!/[a-zA-Z]/.test(str[i])) continue; // leave punctuation alone
-      const edit = setchr(str, i, abet[j]);
+      if (!/[a-zA-Z]/.test(str[i])) continue; // leave non-alpha chars alone
+      if (str[i].toLowerCase() === abet[j]) continue; // prevent excess null edits
+      const abetchr = /[A-Z]/.test(str[i]) ? abet[j].toUpperCase() : abet[j];
+      const edit = setchr(str, i, abetchr);
       if (constraints.some(c => !c(edit))) continue; // prevent disallowed edits
       edits.push(edit);
     }
