@@ -63,16 +63,8 @@ function mutate(str) {
   }
   return edits;
 }
-function bestmuts(str, n) {
-  const muts = mutate(str);
-  muts.sort((a, b) => prob(b) - prob(a));
-  return muts.slice(0, n);
-}
 function randnth(xs) {
   return xs[Math.floor(Math.random() * xs.length)];
-}
-function warp(str) {
-  return randnth(bestmuts(str, 3));
 }
 function mapcat(xs, fn) {
   var res = [];
