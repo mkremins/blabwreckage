@@ -124,7 +124,9 @@ document.getElementById("borrow").onclick = () => {
   prevText = wreckage.innerText;
 };
 document.getElementById("summon").onclick = () => {
-  wreckage.innerText = range(10).map(_ => noise(25)).join("\n");
+  const linecount = 2 + Math.floor(Math.random() * 14);
+  const linelength = 10 + Math.floor(Math.random() * 40);
+  wreckage.innerText = range(linecount).map(_ => noise(linelength)).join("\n");
   prevText = wreckage.innerText;
 };
 document.getElementById("wreck").onclick = () => {
